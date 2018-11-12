@@ -55,107 +55,94 @@ void setup() {
 		  	}
 
 			for(int i = 0; i<16;i++) {
-				if(ip[i]!= ipAddr[i])
-			}
-
-	    if (WiFi.status() == WL_CONNECTED) {
-	      Serial.println("Start GET request");
-	      String url;
-	      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
-	      url += "serial=";
-	      url += String(serial);
-	      url += "&ip=";
-	      url += ip;
-	      Serial.println("ip is");
-	      Serial.println(ip);
-	      http.begin(url);
-	      Serial.println("send");
-	      int httpCode = http.GET(); 
-	      if (httpCode > 0) { 
-	        String payload = http.getString(); 
-	        Serial.println(payload);
-	      }
-	      http.end(); 
-	    }
-    
+				if(ip[i]!= ipAddr[i]) {
+					reqToChangeIP(ip);
+					writeEEPROM(34,16,strdup(ip.c_str()));
+					break;
+				}
+			}    
   
   		}
 
 
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.println("");
-    Serial.println("WiFi up AP");
-    WiFi.mode(WIFI_AP); 
-    WiFi.softAP(ssid);
-    Serial.println(WiFi.softAPIP());
-  }
+		if (WiFi.status() != WL_CONNECTED)  {
+			Serial.println("");
+		    Serial.println("WiFi up AP");
+		    WiFi.mode(WIFI_AP); 
+		    WiFi.softAP(ssid);
+		    Serial.println(WiFi.softAPIP());
+		}
   
-}
-if(LAN_SSID[15] =='*'){
-  server.on("/", []() {
-    server.send(200, "text/html", first_conncet());
-  });
-  server.on("/config", []() {
-    writeEEPROM(0,16,strdup((server.arg("SSID_").c_str())));
-    writeEEPROM(17,33,strdup((server.arg("PASSWORD_").c_str())));
-    server.send(200, "text/html", "OK" );
-    delay(1000);
-    ESP.restart();
-  });
-}
-else{
-  Serial.println("normal work");
-  server.on("/", []() {
-    server.send(200, "text/html", normal_conncet());
-  });
+	}
 
-  server.on("/GET_test", []() {
-    IPAddress broadCast = WiFi.localIP();
-    String ip;
-    for(int i = 0; i < 4; i++){
-      ip += String(broadCast[i]);
-      if(i < 3)ip += ".";
-    }
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("Start GET request");
-      String url;
-      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
-      url += "serial=";
-      url += String(serial);
-      url += "&ip=";
-      url += ip;
-      Serial.println("ip is");
-      Serial.println(ip);
-      http.begin(url);
-      Serial.println("send");
-      int httpCode = http.GET(); 
-      if (httpCode > 0) { 
-        String payload = http.getString(); 
-        Serial.println(payload);
-      }
-      http.end(); 
-    }
-    
-    server.send(200, "text/html", ip);
-  });
+	if(LAN_SSID[15] =='*'){
+	  server.on("/", []() {
+	    server.send(200, "text/html", first_conncet());
+	  });
+	  server.on("/config", []() {
+	    writeEEPROM(0,16,strdup((server.arg("SSID_").c_str())));
+	    writeEEPROM(17,33,strdup((server.arg("PASSWORD_").c_str())));
+	    server.send(200, "text/html", "OK" );
+	    delay(1000);
+	    ESP.restart();
+	  });
+	}
+	else {
+		Serial.println("normal work");
 
-  server.on("/clean_ssid", []() {
-    char * ssid_ = strdup(ssid);
-    writeEEPROM(0,16,ssid_);
-    server.send(200, "text/html", "OK" );
-    delay(1000);
-    ESP.restart();
-  });
-  server.on("/config", []() {
-    writeEEPROM(0,16,strdup((server.arg("SSID_").c_str())));
-    writeEEPROM(17,33,strdup((server.arg("PASSWORD_").c_str())));
-    server.send(200, "text/html", "OK" );
-    delay(1000);
-    ESP.restart();
-  });
-}
-  server.begin()
+		server.on("/", []() {
+			server.send(200, "text/html", normal_conncet());
+		});
+
+		server.on("/GET_test", []() {
+			IPAddress broadCast = WiFi.localIP();
+		    String ip;
+		    for(int i = 0; i < 4; i++) {
+		    	ip += String(broadCast[i]);
+		        if(i < 3)ip += ".";
+		    }
+
+		    if (WiFi.status() == WL_CONNECTED) {
+		      Serial.println("Start GET request");
+		      String url;
+		      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
+		      url += "serial=";
+		      url += String(serial);
+		      url += "&ip=";
+		      url += ip;
+		      Serial.println("ip is");
+		      Serial.println(ip);
+		      http.begin(url);
+		      Serial.println("send");
+		      int httpCode = http.GET(); 
+		      if (httpCode > 0) { 
+		        String payload = http.getString(); 
+		        Serial.println(payload);
+		      }
+		      http.end(); 
+		    }
+		    
+		    server.send(200, "text/html", ip);
+		});
+
+	  	server.on("/clean_ssid", []() {
+	  		char * ssid_ = strdup(ssid);
+		    writeEEPROM(0,16,ssid_);
+		    server.send(200, "text/html", "OK" );
+		    delay(1000);
+		    ESP.restart();
+		});
+
+	  	server.on("/config", []() {
+	  		writeEEPROM(0,16,strdup((server.arg("SSID_").c_str())));
+	    	writeEEPROM(17,33,strdup((server.arg("PASSWORD_").c_str())));
+	    	server.send(200, "text/html", "OK" );
+	    	delay(1000);
+	    	ESP.restart();
+	    });
+	}
+	
+  server.begin();
 }
 
 
@@ -241,4 +228,26 @@ void readEEPROM(int startAdr, int maxLength, char* dest) {
   EEPROM.end();    
   Serial.print("ready reading EEPROM:");
   Serial.println(dest);
+}
+
+void reqToChangeIP(String ip){
+	if (WiFi.status() == WL_CONNECTED) {
+	      Serial.println("Start GET request");
+	      String url;
+	      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
+	      url += "serial=";
+	      url += String(serial);
+	      url += "&ip=";
+	      url += ip;
+	      Serial.println("ip is");
+	      Serial.println(ip);
+	      http.begin(url);
+	      Serial.println("send");
+	      int httpCode = http.GET(); 
+	      if (httpCode > 0) { 
+	        String payload = http.getString(); 
+	        Serial.println(payload);
+	      }
+	      http.end(); 
+	    }
 }
