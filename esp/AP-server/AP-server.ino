@@ -154,7 +154,7 @@ void loop() {
   server.handleClient();
   if(millis() - timeStart > 5000 && accID == "") {
   	timeStart = millis();
-  	//reqToChangeIP(String(ipAddr));
+  	reqToChangeIP(String(ipAddr));
   	Serial.println(String(ipAddr));
   	Serial.println(String(millis()));
   }
