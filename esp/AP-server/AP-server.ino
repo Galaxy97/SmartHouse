@@ -11,19 +11,23 @@ const char *serial = "1596347812";
 char LAN_SSID[16];
 char LAN_PSWD[16];
 char ipAddr[16];
+String accID;
 
 ESP8266WebServer server(80);
 HTTPClient http;
+unsigned long timeStart;
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  readEEPROM(0,16,LAN_SSID);
-  readEEPROM(17,16,LAN_PSWD);
-  delay(1000);
-  Serial.println("LAN_SSID and LAN_PSWD");
-  Serial.println(LAN_SSID);
-  Serial.println(LAN_PSWD);
+
+	timeStart = millis();
+	Serial.begin(115200);
+	delay(1000);
+	readEEPROM(0,16,LAN_SSID);
+	readEEPROM(17,16,LAN_PSWD);
+	delay(1000);
+	Serial.println("LAN_SSID and LAN_PSWD");
+	Serial.println(LAN_SSID);
+	Serial.println(LAN_PSWD);
 
 	if (LAN_SSID[15] =='*') {
 	  WiFi.mode(WIFI_AP); 
@@ -148,6 +152,12 @@ void setup() {
 
 void loop() {
   server.handleClient();
+  if(millis() - timeStart > 5000 && accID == "") {
+  	timeStart = millis();
+  	//reqToChangeIP(String(ipAddr));
+  	Serial.println(String(ipAddr));
+  	Serial.println(String(millis()));
+  }
 }
 
 String first_conncet() {
@@ -245,7 +255,8 @@ void reqToChangeIP(String ip) {
 	    if (httpCode > 0) { 
 	    	String payload = http.getString(); 
 	        Serial.println(payload);
+	        if(payload != NULL && payload != "repeat") accID = payload;
 	      }
-	      http.end(); 
-	    }
+	    http.end(); 
+	}
 }
