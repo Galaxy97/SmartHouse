@@ -120,7 +120,7 @@ void setup() {
 		        Serial.println(payload);
 		      }
 		      http.end(); 
-		    }
+		    } Serial.println("Haven't connect");
 		    
 		    server.send(200, "text/html", ip);
 		});
@@ -141,7 +141,7 @@ void setup() {
 	    	ESP.restart();
 	    });
 	}
-	
+
   server.begin();
 }
 
@@ -150,7 +150,7 @@ void loop() {
   server.handleClient();
 }
 
-String first_conncet(){
+String first_conncet() {
   String data = "<!DOCTYPE HTML> ";
   data += "<html> ";
   data += "<head> ";
@@ -171,7 +171,7 @@ String first_conncet(){
   data += "</html> ";
   return data;
 }
-String normal_conncet(){
+String normal_conncet() {
   String data = "<!DOCTYPE HTML> ";
   data += "<html> ";
   data += "<head> ";
@@ -209,8 +209,7 @@ void writeEEPROM(int startAdr, int laenge, char* writeString) {
   Serial.println();
   Serial.print("writing EEPROM: ");
   //write to eeprom 
-  for (int i = 0; i < laenge; i++)
-    {
+  for (int i = 0; i < laenge; i++) {
       EEPROM.write(startAdr + i, writeString[i]);
       Serial.print(writeString[i]);
     }
@@ -221,8 +220,7 @@ void writeEEPROM(int startAdr, int laenge, char* writeString) {
 void readEEPROM(int startAdr, int maxLength, char* dest) {
   EEPROM.begin(512);
   delay(10);
-  for (int i = 0; i < maxLength; i++)
-    {
+  for (int i = 0; i < maxLength; i++) {
       dest[i] = char(EEPROM.read(startAdr + i));
     }
   EEPROM.end();    
@@ -230,22 +228,22 @@ void readEEPROM(int startAdr, int maxLength, char* dest) {
   Serial.println(dest);
 }
 
-void reqToChangeIP(String ip){
+void reqToChangeIP(String ip) {
 	if (WiFi.status() == WL_CONNECTED) {
-	      Serial.println("Start GET request");
-	      String url;
-	      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
-	      url += "serial=";
-	      url += String(serial);
-	      url += "&ip=";
-	      url += ip;
-	      Serial.println("ip is");
-	      Serial.println(ip);
-	      http.begin(url);
-	      Serial.println("send");
-	      int httpCode = http.GET(); 
-	      if (httpCode > 0) { 
-	        String payload = http.getString(); 
+		Serial.println("Start GET request");
+	    String url;
+	    url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
+	    url += "serial=";
+	    url += String(serial);
+	    url += "&ip=";
+	    url += ip;
+	    Serial.println("ip is");
+	    Serial.println(ip);
+	    http.begin(url);
+	    Serial.println("send");
+	    int httpCode = http.GET(); 
+	    if (httpCode > 0) { 
+	    	String payload = http.getString(); 
 	        Serial.println(payload);
 	      }
 	      http.end(); 
