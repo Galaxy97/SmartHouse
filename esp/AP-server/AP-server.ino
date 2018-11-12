@@ -10,7 +10,7 @@ const char *serial = "1596347812";
 
 char LAN_SSID[16];
 char LAN_PSWD[16];
-char ipAddr[16]
+char ipAddr[16];
 
 ESP8266WebServer server(80);
 HTTPClient http;
