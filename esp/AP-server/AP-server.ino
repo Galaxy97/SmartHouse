@@ -14,6 +14,7 @@ char ipAddr[16];
 
 ESP8266WebServer server(80);
 HTTPClient http;
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -23,59 +24,64 @@ void setup() {
   Serial.println("LAN_SSID and LAN_PSWD");
   Serial.println(LAN_SSID);
   Serial.println(LAN_PSWD);
-if (LAN_SSID[15] =='*'){
-  WiFi.mode(WIFI_AP); 
-  WiFi.softAP(ssid);
-  
-} else {
-  Serial.println("Connect to WIFI");
-  Serial.print(LAN_SSID);
-  Serial.print(" ");
-  Serial.println(LAN_PSWD);  
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(LAN_SSID,LAN_PSWD);
-  byte tries = 30;
-  while (--tries && WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  if (WiFi.status() == WL_CONNECTED){
-  Serial.println(WiFi.localIP());
-  Serial.print("WiFi connected to ");
-  Serial.println(LAN_SSID);
 
-  readEEPROM(34,16,ipAddr);
-  IPAddress broadCast = WiFi.localIP();
-    String ip;
-    for(int i = 0; i < 4; i++){
-      ip += String(broadCast[i]);
-      if(i < 3)ip += ".";
+	if (LAN_SSID[15] =='*') {
+	  WiFi.mode(WIFI_AP); 
+	  WiFi.softAP(ssid);
+	} else {
+		Serial.println("Connect to WIFI");
+  		Serial.print(LAN_SSID);
+  		Serial.print(" ");
+		Serial.println(LAN_PSWD);  
+		WiFi.mode(WIFI_STA);
+		WiFi.begin(LAN_SSID,LAN_PSWD);
+		byte tries = 30;
+		while (--tries && WiFi.status() != WL_CONNECTED) {
+			delay(500);
+    		Serial.print(".");
+  		}
 
-  for(int i = 0; i<16;i++){
-    if(ip[i]!= ipAddr[i])
-    }
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("Start GET request");
-      String url;
-      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
-      url += "serial=";
-      url += String(serial);
-      url += "&ip=";
-      url += ip;
-      Serial.println("ip is");
-      Serial.println(ip);
-      http.begin(url);
-      Serial.println("send");
-      int httpCode = http.GET(); 
-      if (httpCode > 0) { 
-        String payload = http.getString(); 
-        Serial.println(payload);
-      }
-      http.end(); 
-    }
+		if (WiFi.status() == WL_CONNECTED) {
+			Serial.println(WiFi.localIP());
+			Serial.print("WiFi connected to ");
+			Serial.println(LAN_SSID);
+
+  			readEEPROM(34,16,ipAddr);
+  			IPAddress broadCast = WiFi.localIP();
+    		String ip;
+		    for(int i = 0; i < 4; i++) {
+		    	ip += String(broadCast[i]);
+		      	if(i < 3)ip += ".";
+		  	}
+
+			for(int i = 0; i<16;i++) {
+				if(ip[i]!= ipAddr[i])
+			}
+
+	    if (WiFi.status() == WL_CONNECTED) {
+	      Serial.println("Start GET request");
+	      String url;
+	      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
+	      url += "serial=";
+	      url += String(serial);
+	      url += "&ip=";
+	      url += ip;
+	      Serial.println("ip is");
+	      Serial.println(ip);
+	      http.begin(url);
+	      Serial.println("send");
+	      int httpCode = http.GET(); 
+	      if (httpCode > 0) { 
+	        String payload = http.getString(); 
+	        Serial.println(payload);
+	      }
+	      http.end(); 
+	    }
     
   
-  }
+  		}
+
+
   if (WiFi.status() != WL_CONNECTED)
   {
     Serial.println("");
@@ -149,8 +155,9 @@ else{
     ESP.restart();
   });
 }
-  server.begin();
+  server.begin()
 }
+
 
 void loop() {
   server.handleClient();
