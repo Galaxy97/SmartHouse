@@ -1,15 +1,7 @@
 import json
 import requests
-import urllib2
 import time
 import threading
-
-global internet_status
-internet_status = True
-first_connection = True
-global serial
-serial = "12345678910"
-global accId
 
 
 def thread(my_func):
@@ -19,57 +11,84 @@ def thread(my_func):
     return wrapper
 
 
-def load_json():
-    with open('setting.json', 'r', encoding='utf-8') as fh:
-        data = json.load(fh)
+def load_json(query):
+    if query == "setting":
+        with open('setting.json', 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+    if query == "":
+        pass
     return data
 
 
-def write_json(data):
-    with open('setting.json', 'w', encoding='utf-8') as fh:
-        json.dump(data, fh, indent=3)
+def write_json(data, query):
+    if query == "setting":
+        with open('setting.json', 'w', encoding='utf-8') as fh:
+            json.dump(data, fh, indent=3)
+    if query == "":
+        pass
     return data
 
 
 @thread
 def internet():
+
     global internet_status
     while True:
         try:
-            urllib2.urlopen('http://smartdevgroup.hopto.org', timeout=1)
+            requests.get(
+                'http://smartdevgroup.hopto.org', timeout=1)
             internet_status = True
-        except urllib2.URLError:
+        except requests.exceptions.RequestException:
             internet_status = False
-    time.sleep(5)
+        time.sleep(5)
+    print("close thread")
+
+
+# ----------------- loop ---------------------------
+setting = load_json("setting")
+internet()
+time.sleep(2)
+
+while setting["first_connection"] == "True":
+    print("in while")
+
+    url = setting["domain"] + \
+        setting["urlFirstConnection"] + setting["serial"]
+    data = requests.get(url).text
+    print("data is :")
+    print(data)
+    if(data == ""):
+        print("data = ' '")
+        time.sleep(1)
+        data = requests.get(url).text
+        print("data is :")
+        print(data + "--")
+    if(data == "repeat"):
+        print("data = 'repeat'")
+        while data == "repeat":
+            print("data = 'repeat in loop'")
+            data = requests.get(url).text
+            time.sleep(3)
+        setting.update({"accId": data, "first_connection": "False"})
+        write_json(setting, "setting")
+        print(setting["accId"])
+
+global internet_status
+
+if internet_status and setting["accId"] != "NULL":
+    data_old = requests.get(
+        setting["domain"] + setting["urlToData"] + setting["accId"] +
+        setting["urlToDataOld"]).json()
+    print(data_old)
 
 
 while True:
-    if first_connection:
-        print("in while")
-        first_connection = False
-        global serial
-        url = "http://smartdevgroup.hopto.org/"
-        url += "service/add_brain.php?serial="
-        url += str(serial)
-        data = requests.get(url).text
-        # data = data.text
-        print("data is :")
+    print("internet_status is", internet_status)
+    if internet_status and setting["accId"] != "NULL":
+        data = requests.get(setting["domain"] +
+                            setting["urlToData"] + setting["accId"], timeout=8).json()
+        # data.json()
         print(data)
-        if(data == ""):
-            print("data = ' '")
-            time.sleep(1)
-            data = requests.get(url).text
-            print("data is :")
-            print(data)
-        if(data == "repeat"):
-            print("data = 'repeat'")
-            while data == "repeat":
-                print("data = 'repeat in loop'")
-                data = requests.get(url).text
-                time.sleep(3)
-            global accId
-            accId = data
-            print(accId)
-
-    if internet_status:
-        pass
+        time.sleep(1)
+    else:
+        print("you have not connection to server")
