@@ -93,16 +93,15 @@ while True:
                                 setting["urlToData"] +
                                 setting["accId"], timeout=40).json()
             print(keys)
-        ''' for key in keys:
-            if data[key]["value"] != data_old[key]["value"]:
-                data_old[key].update({'value': data[key]["value"]})
-                url = "http://"
-                url += data[key]["ip"]
-                url += "/LED?status="
-                url += data[key]["value"]
-                # reqToESP = requests.get(url)
-                print(url)
-        '''
+            for key in keys:
+                if data[key]["value"] != data_old[key]["value"]:
+                    data_old[key].update({'value': data[key]["value"]})
+                    url = "http://"
+                    url += data[key]["ip"]
+                    url += "/LED?status="
+                    url += data[key]["value"]
+                    # reqToESP = requests.get(url)
+                    print(url)
         except requests.exceptions.RequestException:
             data = "time out"
             print("time out or ather error")
