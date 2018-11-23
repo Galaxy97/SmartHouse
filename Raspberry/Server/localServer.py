@@ -2,6 +2,8 @@ import json
 import requests
 import time
 import threading
+# import os
+# import main.py as server
 
 
 def thread(my_func):
@@ -85,10 +87,18 @@ if internet_status and setting["accId"] != "NULL":
 while True:
     print("internet_status is", internet_status)
     if internet_status and setting["accId"] != "NULL":
-        data = requests.get(setting["domain"] +
-                            setting["urlToData"] + setting["accId"], timeout=8).json()
-        # data.json()
+        try:
+            data = requests.get(setting["domain"] +
+                                setting["urlToData"] +
+                                setting["accId"], timeout=40).json()
+
+        except requests.exceptions.RequestException:
+            data = "time out"
+            print("time out or ather error")
         print(data)
         time.sleep(1)
     else:
         print("you have not connection to server")
+        # p = server.runserver()
+        time.sleep(5)
+        # os.kill(p.pid)

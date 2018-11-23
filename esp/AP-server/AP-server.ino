@@ -7,6 +7,11 @@
 
 const char *ssid = "**Smart Socket**";
 const char *serial = "1596347812";
+#define LED 2
+
+String status;
+String status_old = "Disable";
+bool status_var;
 
 char LAN_SSID[16];
 char LAN_PSWD[16];
@@ -18,7 +23,9 @@ HTTPClient http;
 unsigned long timeStart;
 
 void setup() {
-
+  pinMode(LED,OUTPUT);
+  digitalWrite(LED,1);
+  //pinMode(3,OUTPUT);
 	timeStart = millis();
 	Serial.begin(115200);
 	delay(1000);
@@ -98,36 +105,9 @@ void setup() {
 			server.send(200, "text/html", normal_conncet());
 		});
 
-		server.on("/GET_test", []() {
-			IPAddress broadCast = WiFi.localIP();
-		    String ip;
-		    for(int i = 0; i < 4; i++) {
-		    	ip += String(broadCast[i]);
-		        if(i < 3)ip += ".";
-		    }
-
-		    if (WiFi.status() == WL_CONNECTED) {
-		      Serial.println("Start GET request");
-		      String url;
-		      url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
-		      url += "serial=";
-		      url += String(serial);
-		      url += "&ip=";
-		      url += ip;
-		      Serial.println("ip is");
-		      Serial.println(ip);
-		      http.begin(url);
-		      Serial.println("send");
-		      int httpCode = http.GET(); 
-		      if (httpCode > 0) { 
-		        String payload = http.getString(); 
-		        Serial.println(payload);
-		      }
-		      http.end(); 
-		    } Serial.println("Haven't connect");
-		    
-		    server.send(200, "text/html", ip);
-		});
+		server.on("/LED", [](){
+			server.send(200, "text/html", chek_control());
+			});
 
 	  	server.on("/clean_ssid", []() {
 	  		char * ssid_ = strdup(ssid);
@@ -136,7 +116,11 @@ void setup() {
 		    delay(1000);
 		    ESP.restart();
 		});
-
+/*
+		server.on("/Sensor", []() {
+			server.send(200, "text/html", getSensorProperty());
+		});
+*/
 	  	server.on("/config", []() {
 	  		writeEEPROM(0,16,strdup((server.arg("SSID_").c_str())));
 	    	writeEEPROM(17,33,strdup((server.arg("PASSWORD_").c_str())));
@@ -156,7 +140,7 @@ void loop() {
   	timeStart = millis();
   	reqToChangeIP(String(ipAddr));
   	Serial.println(String(ipAddr));
-  	Serial.println(String(millis()));
+  	//Serial.println(String(millis()));
   }
 }
 
@@ -191,10 +175,6 @@ String normal_conncet() {
 
   data += "<body> ";
   data += "<h1 align='center'> Welcome <hr> </h1> ";
-
-  data += "<form action='GET_test' align='center'>";
-  data += "<p><button type='submit'>GET test</button></p>";
-  data += "</form>";
 
   data += "<h2 align='center'> This is normal connection.  <p> If your want to clean SSID and password click button</p> </h2> ";
   data += "<form action='clean_ssid' align='center'>";
@@ -240,13 +220,19 @@ void readEEPROM(int startAdr, int maxLength, char* dest) {
 
 void reqToChangeIP(String ip) {
 	if (WiFi.status() == WL_CONNECTED) {
+    IPAddress broadCast = WiFi.localIP();
+        String ip;
+        for(int i = 0; i < 4; i++) {
+          ip += String(broadCast[i]);
+            if(i < 3)ip += ".";
+        }
 		Serial.println("Start GET request");
 	    String url;
-	    url += "http://Smartdevgroup.hopto.org/service/add_socket.php?";
+	    url += "http://192.168.43.56/service/add_socket.php?";
 	    url += "serial=";
 	    url += String(serial);
 	    url += "&ip=";
-	    url += ip;
+      url += ip;
 	    Serial.println("ip is");
 	    Serial.println(ip);
 	    http.begin(url);
@@ -260,3 +246,24 @@ void reqToChangeIP(String ip) {
 	    http.end(); 
 	}
 }
+
+String chek_control() {
+  status = server.arg(0);
+  if(status != status_old){
+    if(status == "Enable")status_var = false;
+    else if(status == "Disable")status_var = true;
+    status_old = status;
+    //digitalWrite(3,status_var);
+    digitalWrite(LED,status_var);
+    
+    }
+    
+    delay(10);
+    return status;
+  }
+/*
+String getSensorProperty() {
+  DS18B20.requestTemperatures(); 
+  return String(DS18B20.getTempCByIndex(0));
+}
+*/

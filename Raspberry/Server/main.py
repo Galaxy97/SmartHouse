@@ -61,6 +61,8 @@ def chek_box_ajax():
     return json_data[key]['value']
 
 
-run(host = "192.168.31.120", port=80, debug=True)
+def runserver():
+    run(host="192.168.184.103", port=80, debug=True)
 
 
+runserver()
